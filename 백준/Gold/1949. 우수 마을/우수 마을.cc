@@ -1,39 +1,58 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const int MAX = 10001;
+const long long INF = -1e18;
 
 int N;
-int people[MAX];
-vector<int> graph[MAX];
-int dp[MAX][2];
-bool visited[MAX];
+long long w[10001];
+vector<int> graph[10001];
+long long dp[10001][3];
+bool visited[10001];
 
-void dfs(int u) {
+void dfs(int u){
     visited[u] = true;
-    dp[u][1] = people[u];
 
-    for (int v : graph[u]) {
-        if (!visited[v]) {
-            dfs(v);
+    dp[u][0] = w[u];
+    dp[u][1] = 0;
+    dp[u][2] = 0;
 
-            dp[u][0] += max(dp[v][0], dp[v][1]);
-            dp[u][1] += dp[v][0];
-        }
+    long long extra = INF;
+    bool hasChild = false;
+
+    for(int v : graph[u]){
+        if(visited[v]) continue;
+        hasChild = true;
+
+        dfs(v);
+
+        dp[u][0] += dp[v][1];
+
+        dp[u][1] += max(dp[v][0], dp[v][2]);
+
+        long long best = max(dp[v][0], dp[v][2]);
+        dp[u][2] += best;
+
+        extra = max(extra, dp[v][0] - best);
+    }
+
+    if(!hasChild){
+        dp[u][2] = INF;
+    }else{
+        dp[u][2] += extra;
     }
 }
 
-int main() {
+int main(){
     ios::sync_with_stdio(false);
-    cin.tie(nullptr);
+    cin.tie(NULL);
 
     cin >> N;
 
-    for (int i = 1; i <= N; i++)
-        cin >> people[i];
+    for(int i=1;i<=N;i++)
+        cin >> w[i];
 
-    for (int i = 0; i < N - 1; i++) {
-        int a, b;
+    for(int i=0;i<N-1;i++){
+        int a,b;
         cin >> a >> b;
         graph[a].push_back(b);
         graph[b].push_back(a);
@@ -41,7 +60,5 @@ int main() {
 
     dfs(1);
 
-    cout << max(dp[1][0], dp[1][1]) << "\n";
-
-    return 0;
+    cout << max(dp[1][0], dp[1][2]) << '\n';
 }
